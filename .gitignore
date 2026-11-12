@@ -1,0 +1,59 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+logs/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+~$*
+
+# Local database files and dumps
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.mdb
+*.accdb
+*.dump
+*.dump.gz
+*.sql.gz
+*.backup
+*.bak
+dump.sql
+*-dump.sql
+*_dump.sql
+pg_dump*.sql
+
+# Uploaded student photos and private user uploads
+uploads/
+private-uploads/
+private_uploads/
+student-uploads/
+student_uploads/
+user-uploads/
+user_uploads/
+
+# Backup and previous-version files
+*.previous
+*.local-copy
+*.old
+*.orig
+*.before-no-logo
+/server.js.edit
+
+# Local-only files
+desktop.ini
+/write-test.txt

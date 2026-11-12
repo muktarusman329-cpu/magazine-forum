@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073a2b" />
+    <title>Editorial index — Klass of 2k26 Magazine Forum</title>
+    <link rel="stylesheet" href="/admin.css" />
+    <script src="/icons.js" defer></script>
+    <script src="/admin.js" defer></script>
+  </head>
+  <body>
+    <header class="bar">
+      <a href="/" class="brand" aria-label="Ibrahim Badamasi Babangida University, Lapai">
+        <img class="university-seal" src="/assets/ibbul-university-logo.jpg" alt="" />
+        <span class="brand-copy">
+          <strong>IBRAHIM BADAMASI BABANGIDA UNIVERSITY, LAPAI</strong>
+          <small>DEPARTMENT OF HISTORY AND INTERNATIONAL STUDIES</small>
+        </span>
+      </a>
+      <a href="/" class="back">
+        <svg class="lucide-icon" data-lucide="arrow-up-left"></svg>
+        <span>CONTRIBUTION FORM</span>
+      </a>
+    </header>
+    <main class="main">
+      <section id="login" class="login">
+        <p class="eyebrow">KLASS OF 2K26 <span>·</span> EDITORIAL OFFICE</p>
+        <h1>Editorial sign-in</h1>
+        <p class="sub">Private access to the Department of History and International Studies class archive.</p>
+        <form id="login-form">
+          <label>USERNAME<input name="username" autocomplete="username" required /></label>
+          <label>PASSWORD<input name="password" type="password" autocomplete="current-password" required /></label>
+          <button class="button" type="submit">OPEN THE DESK <svg class="lucide-icon" data-lucide="arrow-up-right"></svg></button>
+          <p id="login-error" class="error" role="alert"></p>
+        </form>
+      </section>
+      <section id="dashboard" hidden>
+        <header class="archive-heading">
+          <div>
+            <p class="eyebrow">EDITORIAL OFFICE <span>·</span> KLASS OF 2K26</p>
+            <h1>The archive <em>index.</em></h1>
+            <p class="dek">The student record of the Department of History and International Studies, IBBUL Lapai.</p>
+          </div>
+          <button class="logout" id="logout" type="button">SIGN OUT <svg class="lucide-icon" data-lucide="log-out"></svg></button>
+        </header>
+        <section class="stats" aria-label="Archive statistics">
+          <div class="stat"><strong id="count">—</strong><span>REGISTERED CLASSMATES</span></div>
+          <div class="stat"><strong id="recent-count">—</strong><span>ADDED IN THE LAST 7 DAYS</span></div>
+        </section>
+        <nav class="archive-tabs" aria-label="Archive records">
+          <button class="archive-tab is-active" id="active-tab" type="button" aria-pressed="true">ACTIVE REGISTER</button>
+          <button class="archive-tab" id="pending-tab" type="button" aria-pressed="false">PENDING DELETION <span id="pending-count">0</span></button>
+        </nav>
+        <section id="active-view" aria-label="Active registrations">
+          <div class="toolbar" aria-label="Search and filter the archive">
+            <label>
+              SEARCH RECORDS
+              <input id="search-input" type="search" placeholder="Name, phone, or nickname" autocomplete="off" />
+            </label>
+            <label>
+              REGISTRATION PERIOD
+              <select id="date-filter">
+                <option value="all">All records</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+              </select>
+            </label>
+            <button class="button export" id="export" type="button">EXPORT REGISTER <svg class="lucide-icon" data-lucide="download"></svg></button>
+          </div>
+          <p class="status" id="status" role="status" aria-live="polite">Loading the archive…</p>
+          <div id="entries" class="entries" aria-live="polite"></div>
+        </section>
+        <section id="pending-view" hidden aria-labelledby="pending-title">
+          <div class="pending-heading">
+            <h2 id="pending-title">Awaiting permanent deletion</h2>
+            <p>Restore a record before its scheduled deletion date.</p>
+          </div>
+          <p class="status" id="pending-status" role="status" aria-live="polite"></p>
+          <div id="pending-entries" class="pending-entries" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+    <footer class="foot">IBRAHIM BADAMASI BABANGIDA UNIVERSITY, LAPAI · KLASS OF 2K26 MAGAZINE FORUM</footer>
+    <dialog class="record-dialog" id="record-dialog" aria-labelledby="detail-name">
+      <img id="detail-photo" alt="" />
+      <div class="record-detail">
+        <button class="record-close" id="close-record" type="button" aria-label="Close record details">
+          <svg class="lucide-icon" data-lucide="x"></svg>
+        </button>
+        <p class="eyebrow">ARCHIVE RECORD <span id="detail-reference"></span></p>
+        <h2 id="detail-name"></h2>
+        <dl>
+          <dt>PHONE NUMBER</dt><dd id="detail-phone"></dd>
+          <dt>NICKNAME</dt><dd id="detail-nickname"></dd>
+          <dt>REGISTERED</dt><dd id="detail-date"></dd>
+        </dl>
+        <p class="error" id="record-error" role="alert" aria-live="polite"></p>
+        <div class="record-actions">
+          <button class="button" id="edit-record" type="button">EDIT DETAILS</button>
+          <button class="delete-button" id="delete-record" type="button">DELETE RECORD</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog class="edit-dialog" id="edit-dialog" aria-labelledby="edit-title">
+      <form id="edit-form" novalidate>
+        <p class="eyebrow">EDITORIAL CORRECTION</p>
+        <h2 id="edit-title">Edit registration</h2>
+        <label>FULL NAME<input name="fullName" minlength="2" maxlength="100" required /></label>
+        <label>PHONE NUMBER<input name="phone" type="tel" minlength="7" maxlength="20" required /></label>
+        <label>NICKNAME<input name="nickname" minlength="1" maxlength="50" required /></label>
+        <p class="error" id="edit-error" role="alert"></p>
+        <div class="edit-actions">
+          <button class="cancel-button" id="cancel-edit" type="button">CANCEL</button>
+          <button class="button" id="save-edit" type="submit">SAVE CHANGES</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

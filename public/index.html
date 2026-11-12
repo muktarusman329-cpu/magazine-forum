@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073a2b" />
+    <meta
+      name="description"
+      content="Add your portrait and details to the Department of History and International Studies, Klass of 2k26 magazine."
+    />
+    <title>Klass of 2k26 — Magazine Forum</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/icons.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <img class="university-seal" src="/assets/ibbul-university-logo.jpg" alt="Ibrahim Badamasi Babangida University seal" />
+        <p class="department-name">DEPARTMENT OF HISTORY<br />AND INTERNATIONAL STUDIES</p>
+        <div class="hero-divider" aria-hidden="true"><span></span></div>
+        <h1 id="page-title">Klass of <em>2k26</em></h1>
+        <p class="hero-subtitle">Magazine Forum</p>
+        <p class="hero-kicker">ONE FORM <i>·</i> EVERY DETAIL <i>·</i> ONE EDITION</p>
+      </div>
+    </header>
+    <main class="page-shell">
+      <section class="submission-card" id="contribution" aria-labelledby="form-title">
+        <header class="card-heading">
+          <h2 id="form-title">Magazine submission</h2>
+          <p>Add your details below. It takes less than two minutes.</p>
+        </header>
+
+        <form id="entry-form" novalidate>
+          <div class="upload-field">
+            <label class="field-label" for="photo">YOUR PHOTO</label>
+            <label id="dropzone" class="dropzone" for="photo">
+              <input id="photo" name="photo" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required />
+              <svg class="upload-icon lucide-icon" data-lucide="camera"></svg>
+              <span class="drop-copy">
+                <strong id="photo-title">Tap to upload your photo</strong>
+                <small id="photo-hint">JPG/JPEG or PNG · Maximum 5 MB</small>
+              </span>
+              <img id="photo-preview" alt="Preview of the selected portrait" />
+              <span class="upload-action">BROWSE</span>
+            </label>
+            <p class="field-error" id="photo-error" aria-live="polite"></p>
+          </div>
+
+          <div class="text-field">
+            <label class="field-label" for="full-name">FULL NAME</label>
+            <input id="full-name" name="fullName" maxlength="100" autocomplete="name" placeholder="e.g. Chidinma Okafor" required />
+            <p class="field-error" id="name-error" aria-live="polite"></p>
+          </div>
+
+          <div class="two-fields">
+            <div class="text-field">
+              <label class="field-label" for="phone">PHONE NUMBER</label>
+              <input id="phone" name="phone" type="tel" maxlength="20" autocomplete="tel" placeholder="0803 123 4567" required />
+              <small class="field-hint">Nigerian number, e.g. 0803 123 4567</small>
+              <p class="field-error" id="phone-error" aria-live="polite"></p>
+            </div>
+            <div class="text-field">
+              <label class="field-label" for="nickname">NICKNAME</label>
+              <input id="nickname" name="nickname" maxlength="50" placeholder="e.g. Dee" required />
+              <p class="field-error" id="nickname-error" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <label class="consent">
+            <input id="consent" type="checkbox" required />
+            <span>I agree that my photo and details may appear in the <strong>Klass of 2k26 magazine.</strong></span>
+          </label>
+          <label class="honeypot" aria-hidden="true">
+            Leave this field empty
+            <input name="website" tabindex="-1" autocomplete="off" />
+          </label>
+          <button class="submit-button" id="submit-button" type="submit">
+            <span id="submit-label">SUBMIT MY DETAILS</span>
+            <svg class="arrow lucide-icon" data-lucide="arrow-right"></svg>
+          </button>
+          <p class="privacy-note">Your photo and details are used only by the class magazine editorial team.</p>
+          <div class="form-message" id="form-message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+    <footer class="page-footer">IBBUL, LAPAI <span>·</span> KLASS OF 2K26 MAGAZINE FORUM</footer>
+  </body>
+</html>
