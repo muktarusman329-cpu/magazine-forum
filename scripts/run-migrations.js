@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client } from 'pg';
+import { databaseSslOptions } from '../lib/database-ssl.js';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.join(scriptDir, '..', 'migrations');
@@ -16,7 +17,7 @@ if (!process.env.DATABASE_URL) {
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
+  ssl: databaseSslOptions(isProduction),
 });
 
 function checksum(contents) {

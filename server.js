@@ -13,6 +13,7 @@ import { rateLimit } from 'express-rate-limit';
 import ExcelJS from 'exceljs';
 import { Pool } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
+import { databaseSslOptions } from './lib/database-ssl.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -44,7 +45,7 @@ const readinessTimeoutMs = positiveIntegerSetting('PG_READY_TIMEOUT_MS', 1500);
 const shutdownGraceMs = positiveIntegerSetting('SHUTDOWN_GRACE_MS', 25000);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
+  ssl: databaseSslOptions(isProduction),
   max: poolMax,
   connectionTimeoutMillis: poolConnectionTimeoutMs,
   idleTimeoutMillis: poolIdleTimeoutMs,
@@ -53,7 +54,7 @@ pool.on('error', (error) => console.error('Unexpected idle PostgreSQL client err
 cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, api_secret: process.env.CLOUDINARY_API_SECRET, secure: true });
 
 app.disable('x-powered-by');
-if (isProduction) app.set('trust proxy', 1);
+if (isProduction || process.env.RENDER === 'true') app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'"], imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://api.cloudinary.com'], connectSrc: ["'self'"], formAction: ["'self'"], frameAncestors: ["'none'"] } } }));
 app.use(express.json({ limit: '12kb' }));
 const PgSession = connectPgSimple(session);

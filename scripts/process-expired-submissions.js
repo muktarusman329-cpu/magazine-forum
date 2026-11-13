@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { Client } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
+import { databaseSslOptions } from '../lib/database-ssl.js';
 
 if (process.env.ENABLE_PERMANENT_DELETION !== 'true') {
   throw new Error('Set ENABLE_PERMANENT_DELETION=true only in the scheduled cleanup environment.');
@@ -14,7 +15,7 @@ if (missingCloudinary.length) throw new Error(`Missing required Cloudinary setti
 const isProduction = process.env.NODE_ENV === 'production';
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
+  ssl: databaseSslOptions(isProduction),
 });
 
 cloudinary.config({
