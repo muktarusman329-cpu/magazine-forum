@@ -316,8 +316,38 @@ dateFilter.addEventListener('change', renderEntries);
 activeTab.addEventListener('click', () => showArchiveView('active'));
 pendingTab.addEventListener('click', () => showArchiveView('pending'));
 
-document.querySelector('#export').addEventListener('click', () => {
-  window.location.href = '/api/admin/export.xlsx';
+document.querySelector('#export').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  status.hidden = false;
+  status.textContent = 'Preparing the register and portraits for export…';
+
+  try {
+    const response = await fetch('/api/admin/export.xlsx');
+    if (response.status === 401) {
+      showLogin();
+      throw new Error('Your session ended. Sign in again.');
+    }
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data && typeof data.error === 'string'
+        ? data.error
+        : `The export failed (HTTP ${response.status}).`);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `klass-2k26-magazine-submissions-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status.textContent = 'The register and portraits were exported.';
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
 });
 
 document.querySelector('#logout').addEventListener('click', async () => {

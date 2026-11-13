@@ -15,6 +15,7 @@ import { Pool } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
 import { databaseSslOptions } from './lib/database-ssl.js';
 import { createJsonRateLimiter } from './lib/public-rate-limit.js';
+import { downloadExportThumbnail, thumbnailSize } from './lib/export-photo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -300,9 +301,37 @@ app.get('/api/admin/export.xlsx', requireAdmin, async (_req, res, next) => {
     const result = await pool.query('SELECT id, full_name, phone, nickname, photo_public_id, created_at, consent_at FROM submissions WHERE deleted_at IS NULL ORDER BY created_at ASC');
     const workbook = new ExcelJS.Workbook(); workbook.creator = 'Klass of 2k26 Magazine Forum'; workbook.created = new Date();
     const sheet = workbook.addWorksheet('Magazine submissions', { views: [{ state: 'frozen', ySplit: 1 }] });
-    sheet.columns = [{ header: 'Reference', key: 'id', width: 13 }, { header: 'Full name', key: 'fullName', width: 30 }, { header: 'Phone number', key: 'phone', width: 22 }, { header: 'Nickname', key: 'nickname', width: 22 }, { header: 'Photo public ID', key: 'photo', width: 48 }, { header: 'Submitted at (UTC)', key: 'date', width: 24 }, { header: 'Consent recorded (UTC)', key: 'consent', width: 24 }];
-    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B3D91' } }; sheet.autoFilter = 'A1:G1';
-    for (const row of result.rows) sheet.addRow({ id: row.id, fullName: row.full_name, phone: row.phone, nickname: row.nickname, photo: row.photo_public_id, date: new Date(row.created_at).toISOString(), consent: new Date(row.consent_at).toISOString() });
+    sheet.columns = [{ header: 'Reference', key: 'id', width: 13 }, { header: 'Full name', key: 'fullName', width: 30 }, { header: 'Phone number', key: 'phone', width: 22 }, { header: 'Nickname', key: 'nickname', width: 22 }, { header: 'Photo public ID', key: 'photo', width: 48 }, { header: 'Submitted at (UTC)', key: 'date', width: 24 }, { header: 'Consent recorded (UTC)', key: 'consent', width: 24 }, { header: 'Portrait', key: 'portrait', width: 18 }];
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B3D91' } }; sheet.autoFilter = 'A1:H1';
+    for (const row of result.rows) {
+      sheet.addRow({ id: row.id, fullName: row.full_name, phone: row.phone, nickname: row.nickname, photo: row.photo_public_id, date: new Date(row.created_at).toISOString(), consent: new Date(row.consent_at).toISOString() });
+    }
+
+    try {
+      const batchSize = 4;
+      for (let start = 0; start < result.rows.length; start += batchSize) {
+        const batch = result.rows.slice(start, start + batchSize);
+        const thumbnails = await Promise.allSettled(
+          batch.map((row) => downloadExportThumbnail(row.photo_public_id, cloudinary)),
+        );
+        const failed = thumbnails.find((thumbnail) => thumbnail.status === 'rejected');
+        if (failed) throw failed.reason;
+
+        thumbnails.forEach((thumbnail, offset) => {
+          const rowIndex = start + offset + 1;
+          const imageId = workbook.addImage({ buffer: thumbnail.value, extension: 'jpeg' });
+          sheet.getRow(rowIndex + 1).height = 88;
+          sheet.addImage(imageId, {
+            tl: { col: 7, row: rowIndex },
+            ext: { width: thumbnailSize, height: thumbnailSize },
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Could not include portraits in the submission export:', error);
+      return res.status(502).json({ error: 'Could not prepare the export because one or more portraits are unavailable. Please try again later.' });
+    }
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="klass-2k26-magazine-submissions-${new Date().toISOString().slice(0, 10)}.xlsx"`);
     await workbook.xlsx.write(res); res.end();
