@@ -20,6 +20,18 @@ function setFieldError(id, text) {
   document.querySelector(`#${id}`).textContent = text;
 }
 
+async function readResponse(response, fallback) {
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) throw new Error(`${fallback} (HTTP ${response.status}).`);
+    throw new Error('The server returned an invalid response. Please try again.');
+  }
+  if (!response.ok) throw new Error(data && typeof data.error === 'string' ? data.error : fallback);
+  return data;
+}
+
 function clearPhotoPreview() {
   if (previewUrl) {
     URL.revokeObjectURL(previewUrl);
@@ -127,8 +139,7 @@ form.addEventListener('submit', async (event) => {
       const body = new FormData();
       body.append('photo', fileInput.files[0]);
       const response = await fetch('/api/upload', { method: 'POST', body });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'The photo could not be uploaded.');
+      const data = await readResponse(response, 'The photo could not be uploaded.');
       uploaded = data;
     }
 
@@ -147,8 +158,7 @@ form.addEventListener('submit', async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Your details could not be submitted.');
+    const data = await readResponse(response, 'Your details could not be submitted.');
 
     clearPhotoPreview();
     form.innerHTML = `

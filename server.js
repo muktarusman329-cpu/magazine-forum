@@ -14,6 +14,7 @@ import ExcelJS from 'exceljs';
 import { Pool } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
 import { databaseSslOptions } from './lib/database-ssl.js';
+import { createPublicRateLimiter } from './lib/public-rate-limit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -63,7 +64,14 @@ app.use(express.static(publicDir, { index: 'index.html', maxAge: isProduction ? 
 app.use('/api/admin', (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
 const limits = (windowMs, limit) => rateLimit({ windowMs, limit, standardHeaders: 'draft-8', legacyHeaders: false });
-const publicLimiter = limits(15 * 60 * 1000, 8);
+const uploadLimiter = createPublicRateLimiter(
+  positiveIntegerSetting('PUBLIC_UPLOAD_RATE_LIMIT', 1000),
+  'Too many photo uploads from this network. Please wait before trying again.',
+);
+const submissionLimiter = createPublicRateLimiter(
+  positiveIntegerSetting('PUBLIC_SUBMISSION_RATE_LIMIT', 1000),
+  'Too many submissions from this network. Please wait before trying again.',
+);
 const loginLimiter = limits(15 * 60 * 1000, 8);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png'].includes(file.mimetype)) });
 const folder = process.env.CLOUDINARY_FOLDER || 'klass-2k26/submissions';
@@ -126,7 +134,7 @@ app.get('/api/health/ready', async (_req, res) => {
     clearTimeout(timeoutHandle);
   }
 });
-app.post('/api/upload', publicLimiter, sameOrigin, upload.single('photo'), async (req, res, next) => {
+app.post('/api/upload', uploadLimiter, sameOrigin, upload.single('photo'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Choose a JPG/JPEG or PNG photo under 5 MB.' });
     const detected = await fileTypeFromBuffer(req.file.buffer);
@@ -154,7 +162,7 @@ app.post('/api/upload', publicLimiter, sameOrigin, upload.single('photo'), async
   } catch (error) { next(error); }
 });
 
-app.post('/api/submissions', publicLimiter, sameOrigin, async (req, res, next) => {
+app.post('/api/submissions', submissionLimiter, sameOrigin, async (req, res, next) => {
   try {
     const { fullName, phone, nickname, photoId, photoToken, consent, website } = req.body || {};
     if (website) return res.status(400).json({ error: 'Submission could not be accepted.' });
