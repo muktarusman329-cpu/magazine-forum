@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import crypto from 'node:crypto';
+import { once } from 'node:events';
 import path from 'node:path';
+import { ZipArchive } from 'archiver';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import session from 'express-session';
@@ -15,7 +17,7 @@ import { Pool } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
 import { databaseSslOptions } from './lib/database-ssl.js';
 import { createJsonRateLimiter } from './lib/public-rate-limit.js';
-import { downloadExportThumbnail, thumbnailSize } from './lib/export-photo.js';
+import { downloadExportPhoto } from './lib/export-photo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -296,45 +298,79 @@ app.get('/api/admin/submissions/:id/photo', requireAdmin, async (req, res, next)
   } catch (error) { next(error); }
 });
 
-app.get('/api/admin/export.xlsx', requireAdmin, async (_req, res, next) => {
+app.get('/api/admin/export.zip', requireAdmin, async (_req, res, next) => {
   try {
     const result = await pool.query('SELECT id, full_name, phone, nickname, photo_public_id, created_at, consent_at FROM submissions WHERE deleted_at IS NULL ORDER BY created_at ASC');
     const workbook = new ExcelJS.Workbook(); workbook.creator = 'Klass of 2k26 Magazine Forum'; workbook.created = new Date();
     const sheet = workbook.addWorksheet('Magazine submissions', { views: [{ state: 'frozen', ySplit: 1 }] });
-    sheet.columns = [{ header: 'Reference', key: 'id', width: 13 }, { header: 'Full name', key: 'fullName', width: 30 }, { header: 'Phone number', key: 'phone', width: 22 }, { header: 'Nickname', key: 'nickname', width: 22 }, { header: 'Photo public ID', key: 'photo', width: 48 }, { header: 'Submitted at (UTC)', key: 'date', width: 24 }, { header: 'Consent recorded (UTC)', key: 'consent', width: 24 }, { header: 'Portrait', key: 'portrait', width: 18 }];
+    sheet.columns = [{ header: 'Reference', key: 'id', width: 13 }, { header: 'Full name', key: 'fullName', width: 30 }, { header: 'Phone number', key: 'phone', width: 22 }, { header: 'Nickname', key: 'nickname', width: 22 }, { header: 'Photo public ID', key: 'photo', width: 48 }, { header: 'Submitted at (UTC)', key: 'date', width: 24 }, { header: 'Consent recorded (UTC)', key: 'consent', width: 24 }, { header: 'Portrait file', key: 'portraitFile', width: 32 }];
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B3D91' } }; sheet.autoFilter = 'A1:H1';
     for (const row of result.rows) {
-      sheet.addRow({ id: row.id, fullName: row.full_name, phone: row.phone, nickname: row.nickname, photo: row.photo_public_id, date: new Date(row.created_at).toISOString(), consent: new Date(row.consent_at).toISOString() });
+      sheet.addRow({ id: row.id, fullName: row.full_name, phone: row.phone, nickname: row.nickname, photo: row.photo_public_id, date: new Date(row.created_at).toISOString(), consent: new Date(row.consent_at).toISOString(), portraitFile: `portraits/${row.id}.jpg` });
     }
+
+    const spreadsheet = await workbook.xlsx.writeBuffer();
+    const archive = new ZipArchive({ zlib: { level: 1 } });
+    const archiveError = new Promise((_, reject) => archive.once('error', reject));
+    archive.on('warning', (error) => archive.emit('error', error));
+    archive.on('error', (error) => {
+      console.error('Could not generate the submission export archive:', error);
+    });
+    const abortController = new AbortController();
+    res.once('close', () => {
+      if (!res.writableFinished) {
+        abortController.abort();
+        archive.abort();
+      }
+    });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="klass-2k26-magazine-submissions-${new Date().toISOString().slice(0, 10)}.zip"`);
+    archive.pipe(res);
 
     try {
-      const batchSize = 4;
-      for (let start = 0; start < result.rows.length; start += batchSize) {
-        const batch = result.rows.slice(start, start + batchSize);
-        const thumbnails = await Promise.allSettled(
-          batch.map((row) => downloadExportThumbnail(row.photo_public_id, cloudinary)),
-        );
-        const failed = thumbnails.find((thumbnail) => thumbnail.status === 'rejected');
-        if (failed) throw failed.reason;
+      const failedPhotos = [];
+      let entryCompleted = once(archive, 'entry');
+      archive.append(spreadsheet, { name: 'submissions.xlsx' });
+      await Promise.race([entryCompleted, archiveError]);
 
-        thumbnails.forEach((thumbnail, offset) => {
-          const rowIndex = start + offset + 1;
-          const imageId = workbook.addImage({ buffer: thumbnail.value, extension: 'jpeg' });
-          sheet.getRow(rowIndex + 1).height = 88;
-          sheet.addImage(imageId, {
-            tl: { col: 7, row: rowIndex },
-            ext: { width: thumbnailSize, height: thumbnailSize },
-          });
-        });
+      for (const row of result.rows) {
+        if (abortController.signal.aborted) return;
+        let photo;
+        try {
+          photo = await downloadExportPhoto(row.photo_public_id, cloudinary, fetch, abortController.signal);
+        } catch (error) {
+          if (abortController.signal.aborted) return;
+          console.error(`Could not download portrait for registration ${row.id}:`, error);
+          failedPhotos.push(row.id);
+          continue;
+        }
+        const filename = `portraits/${row.id}.jpg`;
+        entryCompleted = once(archive, 'entry');
+        archive.append(photo, { name: filename });
+        await Promise.race([entryCompleted, archiveError]);
       }
+
+      if (failedPhotos.length) {
+        const report = [
+          'Some portraits could not be included in this export.',
+          'Contact the administrator with these registration references:',
+          ...failedPhotos.map((id) => String(id)),
+        ].join('\n');
+        entryCompleted = once(archive, 'entry');
+        archive.append(Buffer.from(report), { name: 'EXPORT_ERRORS.txt' });
+        await Promise.race([entryCompleted, archiveError]);
+      }
+
+      await Promise.race([archive.finalize(), archiveError]);
     } catch (error) {
-      console.error('Could not include portraits in the submission export:', error);
+      archive.abort();
+      if (res.headersSent) {
+        res.destroy();
+        return;
+      }
       return res.status(502).json({ error: 'Could not prepare the export because one or more portraits are unavailable. Please try again later.' });
     }
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="klass-2k26-magazine-submissions-${new Date().toISOString().slice(0, 10)}.xlsx"`);
-    await workbook.xlsx.write(res); res.end();
   } catch (error) { next(error); }
 });
 
