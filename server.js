@@ -14,7 +14,7 @@ import ExcelJS from 'exceljs';
 import { Pool } from 'pg';
 import { v2 as cloudinary } from 'cloudinary';
 import { databaseSslOptions } from './lib/database-ssl.js';
-import { createPublicRateLimiter } from './lib/public-rate-limit.js';
+import { createJsonRateLimiter } from './lib/public-rate-limit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -64,15 +64,19 @@ app.use(express.static(publicDir, { index: 'index.html', maxAge: isProduction ? 
 app.use('/api/admin', (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
 const limits = (windowMs, limit) => rateLimit({ windowMs, limit, standardHeaders: 'draft-8', legacyHeaders: false });
-const uploadLimiter = createPublicRateLimiter(
-  positiveIntegerSetting('PUBLIC_UPLOAD_RATE_LIMIT', 1000),
-  'Too many photo uploads from this network. Please wait before trying again.',
-);
-const submissionLimiter = createPublicRateLimiter(
-  positiveIntegerSetting('PUBLIC_SUBMISSION_RATE_LIMIT', 1000),
-  'Too many submissions from this network. Please wait before trying again.',
-);
-const loginLimiter = limits(15 * 60 * 1000, 8);
+const uploadLimiter = createJsonRateLimiter({
+  limit: positiveIntegerSetting('PUBLIC_UPLOAD_RATE_LIMIT', 1000),
+  message: 'Too many photo uploads from this network. Please wait before trying again.',
+});
+const submissionLimiter = createJsonRateLimiter({
+  limit: positiveIntegerSetting('PUBLIC_SUBMISSION_RATE_LIMIT', 1000),
+  message: 'Too many submissions from this network. Please wait before trying again.',
+});
+const loginLimiter = createJsonRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 8,
+  message: 'Too many sign-in attempts. Please wait before trying again.',
+});
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png'].includes(file.mimetype)) });
 const folder = process.env.CLOUDINARY_FOLDER || 'klass-2k26/submissions';
 const tokenFor = (publicId, expires) => {

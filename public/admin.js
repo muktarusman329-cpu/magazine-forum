@@ -38,8 +38,11 @@ async function api(url, options = {}) {
     throw new Error('Your session ended. Sign in again.');
   }
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || 'The request could not be completed.');
+    const data = await response.json().catch(() => null);
+    const fallback = response.status === 429
+      ? 'Too many requests. Please wait before trying again.'
+      : `The request failed (HTTP ${response.status}).`;
+    throw new Error(data && typeof data.error === 'string' ? data.error : fallback);
   }
   return response.status === 204 ? null : response.json();
 }

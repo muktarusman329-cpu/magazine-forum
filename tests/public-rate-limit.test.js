@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import express from 'express';
-import { createPublicRateLimiter } from '../lib/public-rate-limit.js';
+import { createJsonRateLimiter } from '../lib/public-rate-limit.js';
 
-test('upload and submission limits are independent and return JSON errors', async (t) => {
+test('independent API limits return JSON errors', async (t) => {
   const app = express();
-  app.post('/upload', createPublicRateLimiter(1, 'Upload limit reached.'), (_req, res) => res.sendStatus(201));
-  app.post('/submit', createPublicRateLimiter(1, 'Submission limit reached.'), (_req, res) => res.sendStatus(201));
+  app.post('/upload', createJsonRateLimiter({ limit: 1, message: 'Upload limit reached.' }), (_req, res) => res.sendStatus(201));
+  app.post('/submit', createJsonRateLimiter({ limit: 1, message: 'Submission limit reached.' }), (_req, res) => res.sendStatus(201));
   const server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
   t.after(() => new Promise((resolve) => server.close(resolve)));
