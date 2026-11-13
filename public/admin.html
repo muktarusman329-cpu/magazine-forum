@@ -30,7 +30,13 @@
         <p class="sub">Private access to the Department of History and International Studies class archive.</p>
         <form id="login-form">
           <label>USERNAME<input name="username" autocomplete="username" required /></label>
-          <label>PASSWORD<input name="password" type="password" autocomplete="current-password" required /></label>
+          <div class="password-field">
+            <label for="admin-password">PASSWORD</label>
+            <div class="password-input-wrap">
+              <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+              <button id="password-toggle" class="password-toggle" type="button" aria-label="Show password" aria-pressed="false">SHOW</button>
+            </div>
+          </div>
           <button class="button" type="submit">OPEN THE DESK <svg class="lucide-icon" data-lucide="arrow-up-right"></svg></button>
           <p id="login-error" class="error" role="alert"></p>
         </form>

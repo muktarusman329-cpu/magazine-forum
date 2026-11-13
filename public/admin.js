@@ -2,6 +2,8 @@ const login = document.querySelector('#login');
 const dashboard = document.querySelector('#dashboard');
 const form = document.querySelector('#login-form');
 const loginError = document.querySelector('#login-error');
+const passwordInput = document.querySelector('#admin-password');
+const passwordToggle = document.querySelector('#password-toggle');
 const entries = document.querySelector('#entries');
 const status = document.querySelector('#status');
 const count = document.querySelector('#count');
@@ -23,6 +25,14 @@ const pendingCount = document.querySelector('#pending-count');
 
 let records = [];
 let currentRecord = null;
+
+passwordToggle.addEventListener('click', () => {
+  const isVisible = passwordInput.type === 'password';
+  passwordInput.type = isVisible ? 'text' : 'password';
+  passwordToggle.textContent = isVisible ? 'HIDE' : 'SHOW';
+  passwordToggle.setAttribute('aria-label', isVisible ? 'Hide password' : 'Show password');
+  passwordToggle.setAttribute('aria-pressed', String(isVisible));
+});
 
 async function api(url, options = {}) {
   const response = await fetch(url, {

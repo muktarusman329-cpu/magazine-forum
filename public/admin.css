@@ -178,6 +178,45 @@ body::before {
   box-shadow: 0 1px 0 var(--green);
 }
 
+.password-field {
+  margin: 16px 0;
+  color: var(--ink);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+}
+
+.password-field label {
+  display: block;
+  margin: 0;
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.login .password-input-wrap input {
+  padding-right: 56px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  padding: 5px 0 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  font: 700 8px var(--sans);
+  letter-spacing: 0.1em;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .button {
   display: flex;
   width: 100%;
