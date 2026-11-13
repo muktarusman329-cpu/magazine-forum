@@ -33,7 +33,7 @@ async function api(url, options = {}) {
     },
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 && url !== '/api/admin/login') {
     showLogin();
     throw new Error('Your session ended. Sign in again.');
   }
