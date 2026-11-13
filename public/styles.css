@@ -44,8 +44,8 @@ body::before {
 }
 
 .hero {
-  min-height: 455px;
-  padding: 35px 20px 108px;
+  min-height: 420px;
+  padding: 30px 20px 72px;
   background: var(--green-dark);
   color: var(--ivory);
   text-align: center;
@@ -61,13 +61,13 @@ body::before {
   width: 58px;
   height: 58px;
   margin: 0 auto 17px;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .department-name {
   margin: 0;
   color: #e6d9bb;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 1.8;
@@ -108,9 +108,9 @@ body::before {
 }
 
 .hero-kicker {
-  margin: 19px 0 0;
+  margin: 15px 0 0;
   color: #cbbd9e;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.18em;
 }
 
@@ -122,11 +122,11 @@ body::before {
 
 .page-shell {
   width: min(620px, calc(100% - 32px));
-  margin: -78px auto 36px;
+  margin: -72px auto 32px;
 }
 
 .submission-card {
-  padding: 34px 36px 28px;
+  padding: 28px 32px 24px;
   border: 1px solid rgba(197, 161, 94, 0.52);
   border-radius: 20px;
   background: var(--paper);
@@ -134,7 +134,7 @@ body::before {
 }
 
 .card-heading {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .card-heading h2 {
@@ -145,21 +145,21 @@ body::before {
 }
 
 .card-heading p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
 .upload-field {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .field-label {
   display: block;
-  margin: 0 0 9px;
+  margin: 0 0 7px;
   color: var(--ink);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
 }
@@ -167,7 +167,7 @@ body::before {
 .dropzone {
   position: relative;
   display: flex;
-  min-height: 158px;
+  min-height: 138px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -214,13 +214,13 @@ body::before {
 
 .drop-copy strong {
   color: var(--ink);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .drop-copy small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .upload-action {
@@ -261,7 +261,7 @@ body::before {
 
 .text-field {
   min-width: 0;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .text-field input {
@@ -274,7 +274,7 @@ body::before {
   outline: 0;
   background: #fffefa;
   color: var(--ink);
-  font: 14px var(--sans);
+  font: 16px var(--sans);
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
@@ -297,7 +297,7 @@ body::before {
   display: block;
   margin-top: 7px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -305,10 +305,10 @@ body::before {
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  margin: 21px 0 16px;
+  margin: 16px 0 14px;
   color: var(--muted);
   cursor: pointer;
-  font: 11px/1.55 var(--sans);
+  font: 13px/1.5 var(--sans);
 }
 
 .consent input {
@@ -335,7 +335,7 @@ body::before {
   box-shadow: 0 7px 14px rgba(12, 75, 56, 0.15);
   color: #fff;
   cursor: pointer;
-  font: 700 10px var(--sans);
+  font: 700 12px var(--sans);
   letter-spacing: 0.15em;
   transition: background-color 150ms ease, box-shadow 150ms ease;
 }
@@ -366,7 +366,7 @@ body::before {
   max-width: 500px;
   margin: 15px auto 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.6;
   text-align: center;
 }
@@ -375,7 +375,7 @@ body::before {
   min-height: 0;
   margin: 0;
   color: var(--red);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -388,7 +388,7 @@ body::before {
   margin-top: 15px;
   padding: 11px 13px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -410,7 +410,7 @@ body::before {
 
 .thanks .step-label {
   color: var(--green);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.13em;
 }
@@ -437,7 +437,7 @@ body::before {
 .page-footer {
   padding: 0 15px 20px;
   color: #76766a;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-align: center;
@@ -450,8 +450,8 @@ body::before {
 
 @media (max-width: 560px) {
   .hero {
-    min-height: 400px;
-    padding: 28px 16px 92px;
+    min-height: 360px;
+    padding: 24px 16px 70px;
   }
 
   .university-seal {
@@ -461,7 +461,7 @@ body::before {
   }
 
   .department-name {
-    font-size: 8px;
+    font-size: 9px;
   }
 
   .hero-divider {
@@ -477,18 +477,18 @@ body::before {
   }
 
   .hero-kicker {
-    margin-top: 15px;
-    font-size: 7px;
+    margin-top: 12px;
+    font-size: 8px;
     letter-spacing: 0.13em;
   }
 
   .page-shell {
     width: calc(100% - 20px);
-    margin-top: -66px;
+    margin-top: -54px;
   }
 
   .submission-card {
-    padding: 27px 22px 24px;
+    padding: 24px 20px 22px;
     border-radius: 17px;
   }
 
@@ -497,11 +497,11 @@ body::before {
   }
 
   .card-heading p {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .dropzone {
-    min-height: 145px;
+    min-height: 132px;
   }
 
   .two-fields {
